@@ -197,6 +197,8 @@ class StackTest < Test::Unit::TestCase
       end
     end
     threads.each {|t| t.join}
+    
+    # here shoud be wait for 10 secs
 
     test_single_request
   end
