@@ -1,27 +1,31 @@
 import * as net from "net";
+import Connection from "./connection";
 import ConnectionQueue from "./queue";
-
 
 let connectionQueue = new ConnectionQueue();
 
-let server = net.createServer((connection) => {
+let server = net.createServer((socket) => {
   try {
+    // new socket connected (created)
+    let connection = new Connection(socket);
     connectionQueue.add(connection);
   } catch (e) {
-    connection.write("connection full sorry !!");
-    connection.destroy();
+    // connection can not be added into queue 
+    // close the socket
+    socket.write("sorry bro");
+    socket.destroy();
   }
 });
 
-connectionQueue.eventEmitter.on("modified", ()=> {
- while(connectionQueue.queue.length){
-  let c = connectionQueue.remove();
-  c.write("some string");
-  c.destroy();
-  setTimeout(() => c.destroy(), 200);
- }
+connectionQueue.eventEmitter.on("modified", () => {
+  while (connectionQueue.length) {
+    let c = connectionQueue.remove();
+    c.socket.write("some string");
+    c.socket.destroy();
+    // setTimeout(() => c.socket.destroy(), 200);
+  }
 });
 
 server.listen(8080, () => {
- console.log("");
+  console.log("server started");
 });

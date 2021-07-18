@@ -1,30 +1,41 @@
-import * as net from "net";
 import * as events from "events";
+import Connection from "./connection";
 
+//change it to 100
+const MAX_CONNECTION = 2;
 class ConnectionQueue {
+  queue: Connection[];
+  eventEmitter = new events.EventEmitter();
 
- queue:net.Socket[];
- eventEmitter = new events.EventEmitter();
-
- add(connection:net.Socket) {
-  if(this.queue.length === 100){
-   throw Error("Queue full");
+  get length() {
+    return this.queue.length;
   }
-  this.queue.push(connection);
-  // console.log(this.queue.length);
-  this.eventEmitter.emit("modified");
- }
 
+  add(connection: Connection) {
+    // if connection is full then try to remove
+    // oldest one (if it is older than 10s),
+    // if no older than throw some error
+    if (this.queue.length === MAX_CONNECTION) {
+      let oldestConnection = this.queue[this.queue.length - 1];
+      if (oldestConnection.isOlderThan10s()) {
+        oldestConnection.socket.write("very old");
+        oldestConnection.socket.destroy();
+      } else throw Error("Queue full");
+    }
+    // connection can be added normally now
+    this.queue.push(connection);
+    // this.eventEmitter.emit("modified");
+  }
 
- remove():net.Socket {
-  if(this.queue.length === 0) throw Error("Queue empty");
-  return this.queue.shift();
- }
+  remove(): Connection {
+    // if queue is empty then throw some error
+    if (this.queue.length === 0) throw Error("Queue empty");
+    return this.queue.shift();
+  }
 
- constructor(){
-  this.queue = [];
- }
-
+  constructor() {
+    this.queue = [];
+  }
 }
 
 export default ConnectionQueue;
