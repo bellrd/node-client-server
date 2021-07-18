@@ -16,11 +16,11 @@ class ConnectionQueue {
     // oldest one (if it is older than 10s),
     // if no older than throw some error
     if (this.queue.length === MAX_CONNECTION) {
-      let oldestConnection = this.queue[this.queue.length - 1];
+      let oldestConnection = this.queue[0];
       if (oldestConnection.isOlderThan10s()) {
-        oldestConnection.socket.write("very old");
+        oldestConnection.socket.write("very old one!! ");
         oldestConnection.socket.destroy();
-      } else throw Error("Queue full");
+      } else throw Error("Queue full !!");
     }
     // connection can be added normally now
     this.queue.push(connection);
